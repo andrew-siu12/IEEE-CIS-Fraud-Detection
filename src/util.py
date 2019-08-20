@@ -253,3 +253,65 @@ def load_and_merge(raw_data_path, split, merge=True):
         merge_df = transaction.merge(identity, how='left')
         return merge_df
     return transaction, identity
+
+
+def high_duplicates_col(df, base_columns):
+    """
+    Return a list  of column names that  have high similarities to c1 column
+    :param df: pandas dataframe
+    :param base_columns:  columns from original data
+    :return:  list of columns names that have high similarities  to other columns
+    """
+    duplicates = []
+    i = 0
+    for c1 in base_columns:
+        i += 1
+        for c2 in base_columns[i:]:
+            if c1 != c2:
+                if (np.sum((df[c1].values == \
+                            df[c2].values).astype(int)) / len(df)) > 0.95:
+                    duplicates.append(c2)
+
+    return list(set(duplicates))
+
+
+def get_cols_to_drop(df, base_columns):
+    """
+    Return a list of columns that have many null values, high similarity columns and columns that dominated by one value
+    :param df:  pandas dataframe
+    :param base_columns:  list. columns from original data
+    :return:  cols_to_drop
+    """
+    many_null_cols = [col for col in base_columns if df[col].isnull().sum() / df.shape[0] > 0.9]
+    big_top_value_cols = [col for col in base_columns if
+                          df[col].value_counts(dropna=False, normalize=True).values[0] > 0.9]
+    cols_to_drop = list(set(many_null_cols + big_top_value_cols + high_duplicates_col(df, base_columns)))
+
+    if 'isFraud' in cols_to_drop:
+        cols_to_drop.remove('isFraud')
+
+    return cols_to_drop
+
+
+def make_day_feature(df, timecol='TransactionDT'):
+    """
+    Create  day feature , encoded as 0-6.
+    :param df: pandas DaraFrame
+    :param timecol:  str. Name of  time column in df
+    :return:  encoded_days  int. 0-6
+    """
+    days = df[timecol] / (3600 * 24)
+    encoded_days = np.floor(days - 1) % 7
+    return encoded_days
+
+
+def make_hour_feature(df, timecol='TransactionDT'):
+    """
+    Create hour feature, encoded as 0-23.
+    :param df:  pandas DataFrame
+    :param timecol:  str. Name of time column in df
+    :return:  encoded_hours. int. 0-23
+    """
+    hours = df[timecol] / (3600)
+    encoded_hours = np.floor(hours) % 24
+    return encoded_hours
