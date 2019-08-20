@@ -163,7 +163,7 @@ def group_email_domain(df):
 
 def plot_cat_features(df, col, lim=2000):
     """
-    Extension of  count_fraud_plot  with addition of  box plot 
+    Extension of  count_fraud_plot  with addition of  box plot
     :param df:  pandas dataframe
     :param col:  categorical colnum
     :param lim: int that limit the transaction amt
@@ -204,3 +204,52 @@ def plot_cat_features(df, col, lim=2000):
 
     plt.subplots_adjust(hspace=0.5)
     plt.show()
+
+
+# Function to reduce memory usage of dataframe
+def reduce_mem_usage(df, verbose=True):
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+    start_mem = df.memory_usage().sum() / 1024**2
+    for col in df.columns:
+        col_type = df[col].dtypes
+        if col_type in numerics:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)
+            else:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
+    end_mem = df.memory_usage().sum() / 1024**2
+    if verbose: print('Mem. usage decreased to {:5.2f} Mb ({:.1f}% reduction)'.format(end_mem, 100 * (start_mem - end_mem) / start_mem))
+    return df
+
+
+def load_and_merge(raw_data_path, split, merge=True):
+    """
+    Function that load the dataset and merge the dataset if the argument merge is True
+
+    :param raw_data_path: str. the folder name that contain the data
+    :param split:  str. train / test
+    :param merge: bool. if True merge transaction and identity dataset
+    :return: merge_df  or  transaction and identity dataset
+    """
+
+    transaction = pd.read_csv(f"{raw_data_path}/{split}_transaction.csv")
+    identity = pd.read_csv(f"{raw_data_path}/{split}_identity.csv")
+
+    if merge:
+        merge_df = transaction.merge(identity, how='left')
+        return merge_df
+    return transaction, identity
