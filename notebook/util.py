@@ -250,7 +250,7 @@ def load_and_merge(raw_data_path, split, merge=True):
     identity = pd.read_csv(f"{raw_data_path}/{split}_identity.csv")
 
     if merge:
-        merge_df = transaction.merge(identity, how='left', left_index=True, right_index=True)
+        merge_df = transaction.merge(identity, how='left')
         return merge_df
     return transaction, identity
 

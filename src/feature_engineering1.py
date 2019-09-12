@@ -10,10 +10,10 @@ def email_feature(train_merge, test_merge):
     :param test_merge:  pandas dataframe. Merged of testing ttransaction and identity dataset
     :return:   updated column of train_merge and test)merge
     """
-    train_merge['P_Isproton'] = (train_merge['P_emaildomain'] == 'protonmail.com')
-    train_merge['R_Isproton'] = (train_merge['R_emaildomain'] == 'protonmail.com')
-    test_merge['P_Isproton'] = (test_merge['P_emaildomain'] == 'protonmail.com')
-    test_merge['R_Isproton'] = (test_merge['R_emaildomain'] == 'protonmail.com')
+    # train_merge['P_Isproton'] = (train_merge['P_emaildomain'] == 'protonmail.com')
+    # train_merge['R_Isproton'] = (train_merge['R_emaildomain'] == 'protonmail.com')
+    # test_merge['P_Isproton'] = (test_merge['P_emaildomain'] == 'protonmail.com')
+    # test_merge['R_Isproton'] = (test_merge['R_emaildomain'] == 'protonmail.com')
 
     # https://www.kaggle.com/c/ieee-fraud-detection/discussion/100499#latest-579654
     emails = {'gmail': 'google', 'att.net': 'att', 'twc.com': 'spectrum',
@@ -146,8 +146,8 @@ def main():
     print(f"Merged training set shape: {train_merge.shape}")
     print(f"Merged testing set shape: {test_merge.shape}")
 
-    cols_to_drop = get_cols_to_drop(train_merge, BASE_COLUMNS)
-    print(f"Columns to drop : \n {cols_to_drop}")
+   # cols_to_drop = get_cols_to_drop(train_merge, BASE_COLUMNS)
+   # print(f"Columns to drop : \n {cols_to_drop}")
 
     # make a feature that contains the total null values for each transaction
     train_merge['nulls_count'] = train_merge.isna().sum(axis=1)
@@ -203,7 +203,7 @@ def main():
 
     features_check = pd.Series(features_check, index=columns_to_check).sort_values()
     features_discard = list(features_check[features_check == 0].index)
-    features_discard = features_discard + cols_to_drop
+    features_discard = features_discard + COLS_TO_DROP
     print(f"The number of features to be removed {len(features_discard)}")
 
     train_merge = train_merge.drop(features_discard, axis=1)
@@ -212,8 +212,6 @@ def main():
     print(f"The shape of final transformed training data {train_merge.shape}")
     print(f"The shape of final transformed testing data {test_merge.shape}")
 
-    train_merge.to_csv("preprocessed_data/train.csv", index=False)
-    test_merge.to_csv("preprocessed_data/test.csv", index=False)
 
 
 if __name__ == '__main__':

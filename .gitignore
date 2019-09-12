@@ -1,11 +1,11 @@
 # Don't track content of these folders
 data/
-catboost_info/
+preprocessed_data/
 .ipynb_checkpoints
 .idea
 _site
 __pycache__
-
+submission/
 
 # Packages #
 ############
